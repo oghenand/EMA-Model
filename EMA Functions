@@ -1,9 +1,6 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-# In[1]:
-
-
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -504,8 +501,6 @@ def activity_analysis_walking(uid):
     activity_dur_day = activity_dur_df.groupby('day')['Time Delta'].sum()
     return activity_dur_df
 
-
-# In[15]:
     
 def activity_analysis_running(uid):
     """
@@ -587,9 +582,6 @@ def activity_analysis_running(uid):
     return activity_dur_df
 
 
-# In[16]:
-
-
 def deadlines_processing():
     '''
     This function assembles all of the deadlines data for each student 
@@ -606,9 +598,6 @@ def deadlines_processing():
     data['doy'] = pd.to_datetime(data.index)
     data['doy'] = data['doy'].dt.dayofyear
     return data
-
-
-# In[17]:
 
 
 def only_academic_locations(uid):
@@ -733,8 +722,6 @@ def only_academic_locations(uid):
     
     return time_spent_academic_locations 
 
-# In[157]:
-
 
 from sklearn.preprocessing import OneHotEncoder
 def ema_intervals_data(uid, window, ema_name, desired_column): 
@@ -853,43 +840,6 @@ def ema_intervals_data(uid, window, ema_name, desired_column):
     # return relevant columns. 
     return data
 
-# In[22]:
-
-
-'''
-def save_aggregated_data(windows, ema, desired_column, before=False):
-    
-    df = pd.DataFrame()
-    
-    ema_files = glob.glob('dataset/EMA/response/' + ema + '/' + ema + '_*.json')
-    uid_start = len('dataset/EMA/response/' + ema + '/' + ema + '_')
-    
-    # loops through all the files and averages the feature importance lists
-    for file in ema_files: 
-        uid = file[uid_start:uid_start+3]
-        for window in windows: 
-            try: 
-                data = ema_intervals_data(uid, window, ema, desired_column, before)
-            except Exception as e:
-                print(e)
-                print(uid)
-                continue
-            if data is None:
-                continue
-            data['uid'] = uid
-            data['window'] = window
-            df = df.append(data)
-            
-    df.to_csv('ema_data\{}, before = {}.csv'.format(ema, before))
-    
-    return df
-    
-x = save_aggregated_data([2, 4, 6, 8, 10, 12], 'PAM', 'picture_idx')
-'''
-
-
-# In[159]:
-
 
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.model_selection import train_test_split, cross_val_score, LeaveOneOut, TimeSeriesSplit
@@ -912,8 +862,7 @@ def random_forest_importance(features, target, features_names, plot, cv):
     if plot is True: 
         # to determine if the model is better than random chance(i.e. our important features are actually important),
         # we can check with a cross validation score.
-        #print('average cross validation score: {:.2f}'.format(cross_val_score(RandomForestClassifier(n_estimators = 500),
-        #                                                                      features, target, cv = 3).mean()))
+  
         n_features = features.shape[1]
         plot_feature_importance(n_features, features_names, model.feature_importances_)
         
@@ -940,26 +889,6 @@ def random_forest_importance(features, target, features_names, plot, cv):
     return model.feature_importances_
 
 
-# In[164]:
-
-
-feature_names_ = ['activity dur',
-       'walking dur', 'running dur', 'academic location dur',
-       'conversation dur', 'darkness dur', 'bluetooth colocations',
-       'location variance', 'location changes', 'sms', 'phone lock dur',
-       'app usage', 'deadlines']
-
-
-# In[165]:
-
-
-feature_names_2 = ['activity dur', 'conversation dur', 'darkness dur','bluetooth colocations', 
-                  'location variance', 'location changes', 'deadlines']
-
-
-# In[25]:
-
-
 def plot_feature_importance(n_features, features_names, feature_importance): 
     """
     input: n_features: number of features
@@ -970,9 +899,6 @@ def plot_feature_importance(n_features, features_names, feature_importance):
     plt.barh(range(n_features), feature_importance, align='center')
     plt.yticks(np.arange(n_features), features_names)
     plt.xlabel('feature importance')
-
-
-# In[27]:
 
 
 from sklearn.utils import shuffle
@@ -1006,9 +932,6 @@ def find_cv_scores(uid, window, ema, desired_column, data = None):
     return feat_import #feature_names    
 
 
-# In[31]:
-
-
 def find_window_cvs(uid, windows, ema, desired_column, data, feature_names, plot=False): 
     """
     input: uid -- user id
@@ -1038,8 +961,6 @@ def find_window_cvs(uid, windows, ema, desired_column, data, feature_names, plot
     # return the row 
     return df
 
-
-# In[32]:
 
 
 def optimize_windows(windows, ema, desired_column, data, feature_names): 
@@ -1073,8 +994,6 @@ def optimize_windows(windows, ema, desired_column, data, feature_names):
     return df
 
 
-# In[33]:
-
 
 def search_best_windows(best_windows, feature_names, data, desired_column): 
     """
@@ -1102,8 +1021,6 @@ def search_best_windows(best_windows, feature_names, data, desired_column):
     
     return results
 
-
-# In[34]:
 
 
 from sklearn.model_selection import RandomizedSearchCV
@@ -1147,9 +1064,6 @@ def forest_gridsearch(features, target):
     return rf_random.best_params_, rf_random.best_score_
 
 
-# In[35]:
-
-
 def aggregate_data(windows, ema, desired_column, before = False):
     df = pd.DataFrame()
     
@@ -1174,8 +1088,6 @@ def aggregate_data(windows, ema, desired_column, before = False):
     return df 
 
 
-# In[37]:
-
 
 def find_best_funcs(windows, ema, desired_column, feature_names): 
     
@@ -1184,9 +1096,6 @@ def find_best_funcs(windows, ema, desired_column, feature_names):
     best_funcs = search_best_windows(best_windows, feature_names, data, desired_column)
     
     return best_funcs, data
-
-
-# In[38]:
 
 
 def find_all_feature_importance(windows, ema, desired_column, feature_names): 
@@ -1234,27 +1143,6 @@ def find_all_feature_importance(windows, ema, desired_column, feature_names):
     return feat_imp_df
 
 
-# In[39]:
-
-
-#find_all_feature_importance([5], 'stress', 'level')
-
-
-# In[40]:
-
-
-#find_all_feature_importance([5], 'PAM', 'picture_idx')
-
-
-# In[41]:
-
-
-#find_all_feature_importance([5], 'sleep', 'rate')
-
-
-# In[42]:
-
-
 def tscvscore(features, target, model, n_splits): 
     '''
     This function returns a time series cross validation score with five splits
@@ -1278,8 +1166,6 @@ def tscvscore(features, target, model, n_splits):
     return avg_score
 
 
-# In[43]:
-
 
 def uid_list(ema_name):
     '''
@@ -1302,9 +1188,6 @@ def uid_list(ema_name):
     
     uid_list = [i for i in deadlines_uid if i in uid_list]
     return uid_list
-
-
-# In[45]:
 
 
 from sklearn.ensemble import ExtraTreesClassifier
@@ -1349,9 +1232,6 @@ def validate_user(uid, window, ema_name, desired_column, feature_names):
                          'corrupted rf score': cor_rf_scores, 
                          'uid': uid, 
                          'window': window})
-
-
-# In[46]:
 
 
 def validate_user_v2(uid, window, ema_name, desired_column, feature_names):
@@ -1400,10 +1280,7 @@ def validate_user_v2(uid, window, ema_name, desired_column, feature_names):
         return rf_p_value/2, scores_df[['rf score', 'corrupted rf score', 'uid', 'window']], 'rf'
     else: 
         return et_p_value/2, scores_df[['et score', 'corrupted et score', 'uid', 'window']], 'et'
-
-
-# In[47]:
-
+    
 
 def get_all_scores(window, ema_name, desired_column, feature_names):
     '''
@@ -1440,8 +1317,6 @@ def get_all_scores(window, ema_name, desired_column, feature_names):
                 pass
     return user_score_df
 
-
-# In[48]:
 
 
 def get_all_scores_v2(window, ema_name, desired_column, feature_names):
@@ -1498,10 +1373,6 @@ def get_all_scores_v2(window, ema_name, desired_column, feature_names):
     return results_df
 
 
-# In[49]:
-
-
-### Loneliness Scale Survey Data Treatment. Also adapted from the other student's notebook
 
 def lonely_analysis(lonely):
     """
@@ -1781,9 +1652,6 @@ phq = pd.read_csv("dataset/dataset/survey/PHQ-9.csv", index_col=0)
 pre_phq, post_phq = phq_analysis(phq)
 
 
-# In[53]:
-
-
 from sklearn.cluster import AgglomerativeClustering
 
 def agg_clustering(uid_list, n_clusters): 
@@ -1816,9 +1684,6 @@ def agg_clustering(uid_list, n_clusters):
     survey_df['cluster'] = clustering.labels_
     
     return survey_df
-
-
-# In[83]:
 
 
 from sklearn.cluster import KMeans
@@ -1855,17 +1720,11 @@ def kmeans_clustering(uid_list, n_clusters):
     return survey_df
 
 
-# In[84]:
 
 survey_df = agg_clustering(uids, 2)
 
-# In[145]:
-
 
 data = survey_df[['pss score', 'loneliness score', 'phq score']]
-
-
-# In[153]:
 
 
 from sklearn.metrics import silhouette_score
@@ -1898,9 +1757,6 @@ def silhouette_score_analysis(data):
     plt.title("Silhouette Score by Number of Clusters")
     
     return sil_df
-
-
-# In[ ]:
 
 
 
