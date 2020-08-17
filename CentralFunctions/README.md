@@ -1,0 +1,1 @@
+This folder contains files with the functions we used in our EMA analysis this summer. This code can be reusable for future researchers to make the data processing and initial model builidng steps easier
