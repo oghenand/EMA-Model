@@ -2002,9 +2002,13 @@ def silhouette_score_analysis(data):
     cluster = []
     max_clusters = 10
     for i in range(2, max_clusters+1):
-        agg = AgglomerativeClustering(n_clusters = i).fit(data)
+        scaler = StandardScaler()
+        data_scaled = scaler.fit_transform(data)
+        #kmeans = KMeans(n_clusters = i).fit(data_scaled)
+        agg = AgglomerativeClustering(n_clusters = i).fit(data_scaled)
+        #labels = kmeans.labels_
         labels = agg.labels_
-        sil.append(silhouette_score(data, labels, metric = 'euclidean'))
+        sil.append(silhouette_score(data_scaled, labels, metric = 'euclidean'))
         cluster.append(i)
     
     sil_df = pd.DataFrame({'clusters': cluster, 'score': sil})
@@ -2015,3 +2019,118 @@ def silhouette_score_analysis(data):
     plt.title("Silhouette Score by Number of Clusters")
     
     return sil_df
+
+
+def SelBest(arr:list, X:int)->list:
+    '''
+    returns the set of X configurations with shorter distance
+    '''
+    dx=np.argsort(arr)[:X]
+    return arr[dx]
+
+from sklearn.mixture import GaussianMixture
+def gaussian_analysis(data):
+    scaler = StandardScaler()
+    X_scaled = scaler.fit_transform(data)
+    gm_bic= []
+    gm_score=[]
+    def process_gaussian(x):
+        for i in range(2,12):
+            gm = GaussianMixture(n_components=i,n_init=10,tol=1e-3,max_iter=1000).fit(x)
+            print("BIC for number of cluster(s) {}: {}".format(i,gm.bic(x)))
+            print("Log-likelihood score for number of cluster(s) {}: {}".format(i,gm.score(x)))
+            print("-"*100)
+            gm_bic.append(gm.bic(x))
+            gm_score.append(gm.score(x))
+            
+    process_gaussian(X_scaled)
+    plt.figure(figsize=(7,4))
+    plt.title("The Gaussian Mixture model BIC \nfor determining number of clusters\n",fontsize=16)
+    plt.scatter(x=[i for i in range(2,12)],y=np.log(gm_bic),s=150,edgecolor='k')
+    plt.grid(True)
+    plt.xlabel("Number of clusters",fontsize=14)
+    plt.ylabel("Log of Gaussian mixture BIC score",fontsize=15)
+    plt.xticks([i for i in range(2,12)],fontsize=14)
+    plt.yticks(fontsize=15)
+    plt.show()
+
+    
+    '''
+    gmm = GaussianMixture(n_components=7).fit(data)
+    labels = gmm.predict(data)
+    plt.scatter(data.iloc[:, 2], data.iloc[:, 0], c=labels, s = data.iloc[:, 1], cmap='viridis')
+    '''
+    
+    return gm_bic, gm_score
+
+
+def gmm_cluster_analysis(data):
+    """
+    To find optimal number of clusters, we will perform a BIC and silhouette analysis on our data
+    """
+    scaler = StandardScaler()
+    X_scaled = scaler.fit_transform(data)
+    
+    #Silhouette analysis
+    def silhouette_gmm(x):
+        n_clusters = range(2, 12)
+        sils=[]
+        sils_err=[]
+        iterations=20
+        for n in n_clusters:
+            tmp_sil=[]
+            for i in range(iterations):
+                gmm=GaussianMixture(n, n_init=2).fit(x) 
+                labels=gmm.predict(x)
+                sil=silhouette_score(x, labels, metric='euclidean')
+                tmp_sil.append(sil)
+            val=np.mean(SelBest(np.array(tmp_sil), int(iterations/5)))
+            err=np.std(tmp_sil)
+            sils.append(val)
+            sils_err.append(err)
+        return sils, sils_err
+    
+    sils, sils_err = silhouette_gmm(X_scaled)
+    plt.errorbar(range(2,12), sils, yerr=sils_err)
+    plt.title("Silhouette Scores", fontsize=20)
+    plt.xticks(range(2,12))
+    plt.xlabel("Number of clusters")
+    plt.ylabel("Score")
+    plt.show()
+    
+    #BIC score analysis
+    def BIC_gmm(x):
+        n_clusters= range(2, 12)
+        bics=[]
+        bics_err=[]
+        iterations=20
+        for n in n_clusters:
+            tmp_bic=[]
+            for i in range(iterations):
+                gmm=GaussianMixture(n, n_init=2).fit(x) 
+                #gmm=GaussianMixture(n_components = n).fit(x) 
+                tmp_bic.append(gmm.bic(x))
+            val=np.mean(SelBest(np.array(tmp_bic), int(iterations/5)))
+            err=np.std(tmp_bic)
+            bics.append(val)
+            bics_err.append(err)
+        return bics, bics_err
+    
+    bics, bics_err = BIC_gmm(X_scaled)
+    
+    plt.errorbar(range(2,12), bics, yerr = bics_err, label='BIC')
+    plt.title("BIC Scores", fontsize=20)
+    plt.xticks(range(2,12))
+    plt.xlabel("Number of clusters")
+    plt.ylabel("Score")
+    plt.legend()
+    plt.show()
+    
+    plt.errorbar(range(2,12), np.gradient(bics), yerr=bics_err, label='BIC')
+    plt.title("Gradient of BIC Scores", fontsize=20)
+    plt.xticks(range(2,12))
+    plt.xlabel("Number of clusters")
+    plt.ylabel("grad(BIC)")
+    plt.legend()
+    plt.show()
+    
